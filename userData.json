@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "role": "admin",
+      "password": "admin",
+      "fullName": "John Doe",
+      "username": "johndoe",
+      "email": "admin@sneat.com"
+    },
+    {
+      "id": 2,
+      "role": "client",
+      "password": "client",
+      "fullName": "Jane Doe",
+      "username": "janedoe",
+      "email": "client@sneat.com"
+    }
+  ]
+}
