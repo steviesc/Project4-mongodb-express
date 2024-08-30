@@ -7,8 +7,6 @@ const cors = require("cors");
 const dataOrg = require("./emailData.json");
 
 // mongoose.connect("mongodb://127.0.0.1:27017/emaildata", {
-//   // useNewUrlParser: true,
-//   // useUnifiedTopology: true,
 // });
 
 mongoose.connect(
@@ -16,14 +14,13 @@ mongoose.connect(
 );
 
 const app = express();
-app.use(cors()); //解决跨域问题
+app.use(cors());
 app.use(express.json());
 
-// 根路由，获取所有邮件数据
 app.get("/", async (req, res) => {
   try {
     const dataAll = await EmailModel.find();
-    console.log(dataAll); // 打印查询结果进行调试
+    console.log(dataAll);
     res.send(dataAll);
   } catch (err) {
     console.log("Error:", err);
@@ -118,9 +115,7 @@ app.get("/query/:folderOrLabel/:query", async (req, res) => {
 
 app.get("/reset", async (req, res) => {
   try {
-    // 删除现有数据
     await EmailModel.deleteMany({});
-    // 插入原始数据
     await EmailModel.insertMany(dataOrg.emails);
     res.send(dataOrg);
   } catch (error) {
@@ -146,7 +141,7 @@ app.post("/updateMail", async (req, res) => {
 app.get("/profileuser", async (req, res) => {
   try {
     const data = await ChatModel.findOne({}, "profileUser");
-    console.log(data); // 打印查询结果进行调试
+    console.log(data);
     res.send(data);
   } catch (err) {
     console.log("Error:", err);
@@ -157,21 +152,42 @@ app.get("/profileuser", async (req, res) => {
 app.get("/chats", async (req, res) => {
   try {
     const data = await ChatModel.find();
-    console.log(data); // 打印查询结果进行调试
+    console.log(data);
     res.send(data);
   } catch (err) {
     console.log("Error:", err);
     res.status(500).send("Internal Server Error");
   }
 });
-app.get("/login", async (req, res) => {
+// app.get("/login", async (req, res) => {
+//   try {
+//     const data = await UserModel.find();
+//     console.log(data);
+//     res.send(data);
+//   } catch (err) {
+//     console.log("Error:", err);
+//     res.status(500).send("Internal Server Error");
+//   }
+// });
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body; // 从请求主体中获取 email 和 password
+
   try {
-    const data = await UserModel.find();
-    console.log(data); // 打印查询结果进行调试
-    res.send(data);
+    // 在数据库中查找匹配的用户
+    const user = await UserModel.findOne({ email: email, password: password });
+
+    if (user) {
+      // 如果用户存在，返回成功状态
+      res.send({ success: true, message: "Login successful", user });
+    } else {
+      // 如果用户不存在或密码错误，返回错误状态
+      res
+        .status(401)
+        .send({ success: false, message: "Email or Password is invalid" });
+    }
   } catch (err) {
     console.log("Error:", err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send({ success: false, message: "Internal Server Error" });
   }
 });
 app.post("/register", async (req, res) => {
@@ -180,7 +196,7 @@ app.post("/register", async (req, res) => {
   console.log(email, password, username);
   try {
     const maxUser = await UserModel.findOne().sort({ id: -1 }).exec();
-    const newId = maxUser ? maxUser.id + 1 : 1; // 如果没有用户，默认 id 为 1
+    const newId = maxUser ? maxUser.id + 1 : 1;
     const newUser = new UserModel({
       id: newId,
       email,
